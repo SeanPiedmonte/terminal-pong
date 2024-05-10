@@ -1,5 +1,5 @@
 use std::io::{self, Write};
-use crossterm::{execute, cursor::MoveTo, terminal::{Clear, ClearType}};
+use crossterm::{execute, cursor::MoveTo, terminal::{Clear, ClearType}, cursor::{Hide, Show}};
 use std::time::Duration;
 use std::thread;
 
@@ -48,16 +48,18 @@ impl GameState {
     fn render(&self) -> io::Result<()> {
         let mut stdout = io::stdout();
 
+        execute!(stdout, Hide)?;
+
         execute!(stdout, Clear(ClearType::All))?;
 
         execute!(stdout, MoveTo(0, self.p1y))?;
-        stdout.write_all(b"|");
+        let _ = stdout.write_all(b"|");
         execute!(stdout, MoveTo(WIDTH, self.p2y))?;
-        stdout.write_all(b"|");
+        let _ = stdout.write_all(b"|");
 
         execute!(stdout, MoveTo(self.bx, self.by))?;
-        stdout.write_all(b"O");
-
+        let _ = stdout.write_all(b"O");
+        
         stdout.flush()?;
 
         Ok(())
@@ -67,16 +69,27 @@ impl GameState {
 
 fn main() -> io::Result<()> {
     let mut game_state = GameState::new();
+    let mut i = 0;
+
     loop {
-        let mut stdout = io::stdout();
-         
-        let x = 0;
-        if x == 0 {
+        game_state.update_ball();
+        game_state.render()?;
+
+        if i == 1000 {
             break;
         }
-
+        i += 1;
+        thread::sleep(Duration::from_millis(40));
     }
-
+    
+    {
+        let mut stdout = io::stdout();
+        if let Err(err) = execute!(stdout, Show) {
+            eprintln!("Failed to show cursor: {}", err);
+        }
+    }
+    
+    println!();
     Ok(())
 
 }
