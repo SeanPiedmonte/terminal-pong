@@ -1,43 +1,42 @@
-fn main() {
-    const WIDTH: u32 = 80;
-    const HEIGHT: u32 = 40;
-    let mut game_board : [[char; 80]; 40] = [[' '; 80]; 40];
-    let mut p1_pos: (u32, u32) = (HEIGHT / 20, 0);
-    let mut p2_pos: (u32, u32) = (HEIGHT / 20, WIDTH - 1);
-    game_board[p1_pos.0 as usize][p1_pos.1 as usize] = '|';
-    game_board[p2_pos.0 as usize][p2_pos.1 as usize] = '|';
-    let mut bx: i32;
-    let mut by: i32;
-    let mut bdx: i32;
-    let mut bdy: i32;
-    draw_game_board(&mut game_board);
-    while true {
+use std::io::{self, Write};
+use crossterm::{execute, cursor::MoveTo, terminal::{Clear, ClearType}};
+use std::time::Duration;
+use std::thread;
+
+const WIDTH: u16 = 80;
+const HEIGHT: u16 = 20;
+
+struct Game_State {
+    bx: u16,
+    by: u16,
+    p1y: u16,
+    p2y: u16,
+    bdx: i16,
+    bdy: i16,
+}
+
+fn main() -> io::Result<(), Error> {
+    let mut game_state = Game_State {
+        bx : WIDTH / 2,
+        by : HEIGHT / 2,
+        p1y : HEIGHT / 2,
+        p2y : HEIGHT / 2,
+        bdx : 1,
+        bdy : 0,
+    };
+    
+
+
+    loop {
+        let mut stdout = io::stdout();
+        stdout.execute(terminal::Clear(terminal::ClearType::All))?;
 
 
     }
-}
 
-
-fn draw_game_board(game_board: &mut [&mut [char]]) {
-    for elm in 0..80 {
-        println!("-");
-    }
+    Ok(());
 
 }
 
-fn update_game_board() {
-}
-
-fn update_ball_position() {
-}
-
-fn update_p1_paddle_position() {
-}
-
-fn ai_paddle() {
-}
-
-fn win_condition() {
-}
 
 
