@@ -1,9 +1,8 @@
 use std::io::{self, Write};
-use crossterm::{execute, cursor::MoveTo, terminal::{Clear, ClearType}, cursor::{Hide, Show}, 
-    event::{self, KeyCode, KeyEvent, KeyModifiers, KeyCode::Char, read, Event}};
+use crossterm::{cursor::{Hide, MoveTo, Show}, event::{self, KeyCode::{self, Char}}, execute, 
+terminal::{self, Clear, ClearType, LeaveAlternateScreen, }};
 use std::time::Duration;
 use std::thread;
-use std::sync::mpsc;
 
 const WIDTH: u16 = 80;
 const HEIGHT: u16 = 20;
@@ -51,14 +50,18 @@ impl GameState {
 
     }
 
-    fn update_paddles(&mut self, input_rx: &mpsc::Receiver<KeyEvent>) {
-        while let Ok(event) = input_rx.try_recv() {
-            match event.code {
-                KeyCode::Char('w') => self.p1y = self.p1y.saturating_sub(1),
-                KeyCode::Char('s') => self.p1y = (self.p1y + 1).min(HEIGHT - 1),
-                _ => {}
+    fn update_paddles(&mut self) -> bool {
+        while event::poll(Duration::from_millis(0)).unwrap() {
+            if let event::Event::Key(key_event) = event::read().unwrap() {
+                match key_event.code {
+                    KeyCode::Char('w') => self.p1y = if self.p1y - 1 <= 1 {1} else {self.p1y - 1},
+                    KeyCode::Char('s') => self.p1y = (self.p1y + 1).min(HEIGHT - 1),
+                    KeyCode::Esc => return false, 
+                    _ => {}
+                }
             }
         }
+        true
     }
 
     fn render(&self) -> io::Result<()> {
@@ -93,41 +96,24 @@ impl GameState {
 
 fn main() -> io::Result<()> {
     let mut game_state = GameState::new();
-    let mut i = 0;
-
-    let (input_tx, input_rx) = mpsc::channel();
-
-    std::thread::spawn(move || {
-        loop {
-            if event::poll(Duration::from_millis(50)).unwrap() {
-                if let event::Event::Key(key_event) = event::read().unwrap() {
-                    let _ = input_tx.send(key_event);
-                }
-            }
-        }
-    });
-
-    loop {
-        game_state.update_paddles(&input_rx);
+    let mut stdout = io::stdout();
+    terminal::enable_raw_mode().expect("Could not turn on raw mode");
+    let mut running : bool = true;
+    while running {
+        running = game_state.update_paddles();
         game_state.update_ball();
         game_state.render()?;
 
-        if i == 1000 {
-            break;
-        }
-        i += 1;
         thread::sleep(Duration::from_millis(100));
     }
-    
-    {
-        let mut stdout = io::stdout();
-        execute!(stdout, Clear(ClearType::All))?; 
-        if let Err(err) = execute!(stdout, Show) {
-            eprintln!("Failed to show cursor: {}", err);
-        }
-    }
 
-    println!("");
+    terminal::disable_raw_mode().expect("Unable to exit raw mode"); 
+    
+    execute!(stdout, Show).expect("Unable to show cursor"); 
+    execute!(stdout, Clear(ClearType::All))?;
+
+    stdout.flush()?;
+    println!();    
 
     Ok(())
 
