@@ -1,2 +1,3 @@
 # ignore the target folder in my rust project
-/terminal-pong/target
+/terminal-pong/target/
+target/
