@@ -14,6 +14,8 @@ struct GameState {
     p2y: u16,
     bdx: i16,
     bdy: i16,
+    p1points: u16,
+    p2points: u16,
 }
 
 impl GameState {
@@ -25,6 +27,8 @@ impl GameState {
             p2y: HEIGHT / 2 + 1,
             bdx: 1,
             bdy: 1,
+            p1points: 0,
+            p2points: 0,
         }
     }
 
@@ -50,6 +54,7 @@ impl GameState {
 
     }
 
+
     fn update_paddles(&mut self) -> bool {
         while event::poll(Duration::from_millis(0)).unwrap() {
             if let event::Event::Key(key_event) = event::read().unwrap() {
@@ -64,13 +69,63 @@ impl GameState {
         true
     }
 
+    fn ai_paddles(&mut self) {
+        if self.bdx > 0 {
+            let future_ball = self.calc_future_ball_pos();
+            if future_ball < self.p2y as i16 {
+                self.p2y = if self.p2y - 1 <= 1 {1} else {self.p2y - 1};
+            } else if future_ball > self.p2y as i16 {
+                self.p2y = (self.p2y + 1).min(HEIGHT - 1);
+            }
+        }
+    }
+
+    fn calc_future_ball_pos(&self) -> i16 {
+        let mut y_increment = self.bdy;
+        let mut ball_pos : i16 = self.by as i16;
+        let range = WIDTH - self.bx + 1;
+        for _elm in 0..range {
+            if ball_pos + 1 == HEIGHT as i16 || ball_pos - 1 == 0 {
+                y_increment *= -1; 
+            }
+            ball_pos += y_increment;
+        }
+        
+       ball_pos 
+    }
+
+    fn win_condition(&self) -> bool {
+        let mut stdout = io::stdout();
+        if self.p1points == 10 {
+            let _ = stdout.write_all(b"Winner: PLAYER 1");
+            return false;
+        } else if self.p2points == 10 {
+            let _ = stdout.write_all(b"YOU SUCK LOSER");
+            return false;
+        }
+        true
+    }
+
+    fn scored(&mut self) -> bool {
+        if self.bx == WIDTH && self.by != self.p2y && self.by != self.p2y + 1 && self.by != self.p2y - 1 {
+            self.p1points += 1;
+            return true;
+        } else if self.bx == 0 && self.by != self.p1y && self.by != self.p1y + 1 && self.by != self.p1y - 1 {
+            self.p2points += 1;
+            return true;
+        }
+        false
+    }
+
+
     fn render(&self) -> io::Result<()> {
         let mut stdout = io::stdout();
 
         execute!(stdout, Hide)?;
 
         execute!(stdout, Clear(ClearType::All))?;
-
+        execute!(stdout, MoveTo(0, HEIGHT + 1))?;
+        println!("SCORE: {} : {}", self.p1points, self.p2points);
         execute!(stdout, MoveTo(0, self.p1y + 1))?;
         let _ = stdout.write_all(b"|");
         execute!(stdout, MoveTo(0, self.p1y))?;
@@ -100,8 +155,10 @@ fn main() -> io::Result<()> {
     terminal::enable_raw_mode().expect("Could not turn on raw mode");
     let mut running : bool = true;
     while running {
+        game_state.ai_paddles();
         running = game_state.update_paddles();
         game_state.update_ball();
+        game_state.scored();
         game_state.render()?;
 
         thread::sleep(Duration::from_millis(100));
