@@ -3,7 +3,7 @@ use crossterm::{cursor::{Hide, MoveTo, Show}, event::{self, KeyCode::{self, Char
 terminal::{self, Clear, ClearType, LeaveAlternateScreen, }};
 use std::time::Duration;
 use std::thread;
-
+use rand::Rng;
 const WIDTH: u16 = 80;
 const HEIGHT: u16 = 20;
 
@@ -35,13 +35,16 @@ impl GameState {
     fn update_ball(&mut self) {
         self.bx = (self.bx as i16 + self.bdx) as u16;
         self.by = (self.by as i16 + self.bdy) as u16;
+        let mut rng = rand::thread_rng();
+        let x_speed = rng.gen_range(1..5);
+        let y_speed = rng.gen_range(1..5); 
 
         if (self.bx == 0 && (self.by == self.p1y + 1 || self.by == self.p1y - 1)) || 
            (self.bx == WIDTH && (self.by == self.p2y + 1 || self.by == self.p2y - 1)) {
             self.bdx *= -1;
-            self.bdy = if self.bdx > 0 {2} else {-2};
+            self.bdy = if self.bdy < 0 {y_speed} else {y_speed * -1};
         } else if (self.by == self.p1y && self.bx == 0) || (self.bx == WIDTH && self.by == self.p2y) {
-            self.bdx = if self.bdx > 0 {1} else {-1};
+            self.bdx = if self.bdx > 1 {1} else {-1};
             self.bdx *= -1;
             self.bdy *= -1;
         } else if self.bx >= WIDTH || self.bx <= 0 {
@@ -50,6 +53,15 @@ impl GameState {
 
         if self.by >= HEIGHT || self.by <= 0 {
             self.bdy *= -1;
+        }
+
+        if self.scored() {
+            self.bx = WIDTH / 2;
+            self.by = HEIGHT / 2;
+            self.bdx = 1;
+            self.bdy = 1;
+            self.p1y = HEIGHT / 2;
+            self.p2y = HEIGHT / 2;
         }
 
     }
@@ -155,13 +167,15 @@ fn main() -> io::Result<()> {
     terminal::enable_raw_mode().expect("Could not turn on raw mode");
     let mut running : bool = true;
     while running {
+        if !game_state.win_condition() {
+            break;
+        }
         game_state.ai_paddles();
         running = game_state.update_paddles();
         game_state.update_ball();
-        game_state.scored();
         game_state.render()?;
 
-        thread::sleep(Duration::from_millis(100));
+        thread::sleep(Duration::from_millis(200));
     }
 
     terminal::disable_raw_mode().expect("Unable to exit raw mode"); 
