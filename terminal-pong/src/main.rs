@@ -34,14 +34,26 @@ impl GameState {
 
     fn update_ball(&mut self) {
         self.bx = (self.bx as i16 + self.bdx) as u16;
+        if self.bx > 100 {
+            self.bx = 0;
+        } else if self.bx >= 80 { 
+            self.bx = WIDTH;
+        }
+        
         self.by = (self.by as i16 + self.bdy) as u16;
+        if self.by > 100 {
+            self.by = 0;
+        } else if self.by >= 20 {
+            self.by = HEIGHT;
+        }
         let mut rng = rand::thread_rng();
         let x_speed = rng.gen_range(1..5);
         let y_speed = rng.gen_range(1..5); 
 
         if (self.bx == 0 && (self.by == self.p1y + 1 || self.by == self.p1y - 1)) || 
            (self.bx == WIDTH && (self.by == self.p2y + 1 || self.by == self.p2y - 1)) {
-            self.bdx *= -1;
+            //self.bdx *= -1;
+            self.bdx = if self.bdx < 0 {x_speed} else {x_speed * -1};
             self.bdy = if self.bdy < 0 {y_speed} else {y_speed * -1};
         } else if (self.by == self.p1y && self.bx == 0) || (self.bx == WIDTH && self.by == self.p2y) {
             self.bdx = if self.bdx > 1 {1} else {-1};
@@ -82,7 +94,7 @@ impl GameState {
     }
 
     fn ai_paddles(&mut self) {
-        if self.bdx > 0 {
+        if self.bdx > 0 && self.bx > WIDTH / 2 {
             let future_ball = self.calc_future_ball_pos();
             if future_ball < self.p2y as i16 {
                 self.p2y = if self.p2y - 1 <= 1 {1} else {self.p2y - 1};
