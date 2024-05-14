@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package message;
+
+message GameState {
+    u32 bx;
+    u32 by;
+    u32 p1y;
+    u32 p2y;
+    i32 bdx;
+    i32 bdy;
+    u32 p1points;
+    u32 p2points; 
+} 

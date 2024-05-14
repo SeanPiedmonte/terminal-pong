@@ -8,14 +8,14 @@ const WIDTH: u16 = 80;
 const HEIGHT: u16 = 20;
 
 pub struct GameState {
-    bx: u16,
-    by: u16,
-    p1y: u16,
-    p2y: u16,
-    bdx: i16,
-    bdy: i16,
-    p1points: u16,
-    p2points: u16,
+    bx: u32,
+    by: u32,
+    p1y: u32,
+    p2y: u32,
+    bdx: i32,
+    bdy: i32,
+    p1points: u32,
+    p2points: u32,
 }
 
 impl GameState {
