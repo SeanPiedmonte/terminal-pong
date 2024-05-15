@@ -1,4 +1,5 @@
 use std::io::{self, Write};
+use std::net::TcpStream;
 use crossterm::{cursor::{Hide, MoveTo, Show}, event::{self, KeyCode::{self, Char}}, execute, 
 terminal::{self, Clear, ClearType, LeaveAlternateScreen, }};
 use std::time::Duration;
@@ -205,11 +206,13 @@ impl GameState {
         Ok(())
     }
 
-    pub fn run_game(&self) -> io::Result<()> {
+    pub fn run_game(&self, port: &str) -> io::Result<()> {
         let mut game_state = GameState::new();
         let mut stdout = io::stdout();
         terminal::enable_raw_mode().expect("Could not turn on raw mode");
         let mut running : bool = true;
+        let stream = TcpStream::connect(port);
+        let mut client = client_handler::Client::new(stream?);
         while running {
             if !game_state.win_condition() {
                 break;
@@ -219,7 +222,8 @@ impl GameState {
             game_state.update_ball();
             game_state.render()?;
             let data = GameState::clone(&game_state);
-            client_handler::send_data(data)?;
+
+            client.send_data(data)?;
             thread::sleep(Duration::from_millis(200));
         }
 
