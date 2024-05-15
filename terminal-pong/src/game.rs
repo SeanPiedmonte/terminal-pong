@@ -8,14 +8,14 @@ const WIDTH: u16 = 80;
 const HEIGHT: u16 = 20;
 
 pub struct GameState {
-    bx: u32,
-    by: u32,
-    p1y: u32,
-    p2y: u32,
-    bdx: i32,
-    bdy: i32,
-    p1points: u32,
-    p2points: u32,
+    bx: u16,
+    by: u16,
+    p1y: u16,
+    p2y: u16,
+    bdx: i16,
+    bdy: i16,
+    p1points: u16,
+    p2points: u16,
 }
 
 impl GameState {
@@ -30,6 +30,38 @@ impl GameState {
             p1points: 0,
             p2points: 0,
         }
+    }
+
+    pub fn get_bx(&self) -> u16 {
+        self.bx
+    }
+
+    pub fn get_by(&self) -> u16 {
+        self.by
+    }
+
+    pub fn get_p1y(&self) -> u16 {
+        self.p1y
+    }
+
+    pub fn get_p2y(&self) -> u16 {
+        self.p2y
+    }
+
+    pub fn get_bdx(&self) -> i16 {
+        self.bdx
+    }
+
+    pub fn get_bdy(&self) -> i16 {
+        self.bdy
+    }
+
+    pub fn get_p1points(&self) -> u16 {
+        self.p1points
+    }
+
+    pub fn get_p2points(&self) -> u16 {
+        self.p2points
     }
 
     fn update_ball(&mut self) {

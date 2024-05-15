@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+message Game_State {
+    uint32 bx = 1;
+    uint32 by = 2;
+    uint32 p1y = 3;
+    uint32 p2y = 4;
+    int32 bdx = 5;
+    int32 bdy = 6;
+    uint32 p1points = 7;
+    uint32 p2points = 8; 
+} 
