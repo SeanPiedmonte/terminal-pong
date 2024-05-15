@@ -5,12 +5,22 @@ use std::sync::{Arc, Mutex};
 use crate::client_handler::Client;
 
 fn handle_client(mut stream: TcpStream) {
+    let mut buffer = [0; 1500];
     loop {
-        let mut buffer = [0; 1500];
-        stream.read(&mut buffer).expect("Failed to read from client!");
+        match stream.read(&mut buffer) {
+            Ok(bytes_read) => {
+                if bytes_read == 0 {
+                    println!("Client Disconnected");
+                    break;
+                }
 
-        let request = String::from_utf8_lossy(&buffer[..]);
-        println!("Recieved request: {}", request);
+                let request = String::from_utf8_lossy(&buffer[..]);
+                println!("Recieved request: {}", request);
+            },
+            Err(err) => {
+                println!("Error reading from client: {:?}", err);
+            }
+        }
     }
 }
 
