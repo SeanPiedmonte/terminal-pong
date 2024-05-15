@@ -4,9 +4,11 @@ terminal::{self, Clear, ClearType, LeaveAlternateScreen, }};
 use std::time::Duration;
 use std::thread;
 use rand::Rng;
+use crate::client_handler;
 const WIDTH: u16 = 80;
 const HEIGHT: u16 = 20;
 
+#[derive(Debug, Clone, Copy)]
 pub struct GameState {
     bx: u16,
     by: u16,
@@ -216,7 +218,8 @@ impl GameState {
             running = game_state.update_paddles();
             game_state.update_ball();
             game_state.render()?;
-
+            let data = GameState::clone(&game_state);
+            client_handler::send_data(data)?;
             thread::sleep(Duration::from_millis(200));
         }
 
