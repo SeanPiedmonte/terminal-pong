@@ -29,7 +29,7 @@ impl Client {
         out_msg.p1points = game_state.get_p1points() as u32;
         out_msg.p2points = game_state.get_p2points() as u32;
 
-        let out_bytes: Vec<u8> = out_msg.write_to_bytes().unwrap();
+        let out_bytes: Vec<u8> = out_msg.write_to_bytes().expect("Need to write to bytes");
 
         self.stream.write(&out_bytes).expect("Could not connect to port");
 

@@ -3,9 +3,12 @@ use std::net::{TcpListener, TcpStream};
 use std::thread;
 use std::sync::{Arc, Mutex};
 use crate::client_handler::Client;
+use protobuf::{EnumOrUnknown, Message};
+include!(concat!(env!("OUT_DIR"), "/protos/mod.rs"));
+use message::Game_State;
 
 fn handle_client(mut stream: TcpStream) {
-    let mut buffer = [0; 1500];
+    let mut buffer : Vec<u8> = vec![0; 1500];
     loop {
         match stream.read(&mut buffer) {
             Ok(bytes_read) => {
@@ -14,7 +17,7 @@ fn handle_client(mut stream: TcpStream) {
                     break;
                 }
 
-                let request = String::from_utf8_lossy(&buffer[..]);
+                let request = Game_State::parse_from_bytes(&buffer).unwrap();
                 println!("Recieved request: {}", request);
             },
             Err(err) => {
