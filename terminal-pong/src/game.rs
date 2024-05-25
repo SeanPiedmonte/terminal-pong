@@ -1,7 +1,7 @@
 use std::io::{self, Write};
 use std::net::TcpStream;
-use crossterm::{cursor::{Hide, MoveTo, Show}, event::{self, KeyCode::{self, Char}}, execute, 
-terminal::{self, Clear, ClearType, LeaveAlternateScreen, }};
+use crossterm::{cursor::{Hide, MoveTo, Show}, event::{self, KeyCode}, execute, 
+terminal::{self, Clear, ClearType}};
 use std::time::Duration;
 use std::thread;
 use rand::Rng;

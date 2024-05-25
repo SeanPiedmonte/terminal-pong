@@ -1,14 +1,13 @@
-use std::io::{Read, Write};
+use std::io::Read;
 use std::net::{TcpListener, TcpStream};
-use std::thread;
-use std::sync::{Arc, Mutex};
-use crate::client_handler::Client;
-use protobuf::{EnumOrUnknown, Message};
+//use std::thread;
+//use std::sync::{Arc, Mutex};
+use protobuf::Message;
 include!(concat!(env!("OUT_DIR"), "/protos/mod.rs"));
 use message::Game_State;
 
 fn handle_client(mut stream: TcpStream) {
-    let mut buffer : Vec<u8> = vec![0; 1500];
+    let mut buffer : Vec<u8> = [0; 1500].to_vec();
     loop {
         match stream.read(&mut buffer) {
             Ok(bytes_read) => {
@@ -17,8 +16,8 @@ fn handle_client(mut stream: TcpStream) {
                     break;
                 }
 
-                let request = Game_State::parse_from_bytes(&buffer).unwrap();
-                println!("Recieved request: {}", request);
+                let request = Game_State::parse_from_bytes(&buffer[0..bytes_read]).expect("Failed to parse");
+                println!("Recieved request: {:?}", request);
             },
             Err(err) => {
                 println!("Error reading from client: {:?}", err);
