@@ -209,10 +209,10 @@ impl GameState {
     pub fn run_game(&self, port: &str) -> io::Result<()> {
         let mut game_state = GameState::new();
         let mut stdout = io::stdout();
+        let stream = TcpStream::connect(port)?;
+        let mut client = client_handler::Client::new(stream);
         terminal::enable_raw_mode().expect("Could not turn on raw mode");
         let mut running : bool = true;
-        let stream = TcpStream::connect(port);
-        let mut client = client_handler::Client::new(stream?);
         while running {
             if !game_state.win_condition() {
                 break;

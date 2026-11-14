@@ -3,7 +3,7 @@ use std::net::TcpStream;
 use crate::game;
 use game::GameState;
 use protobuf::Message;
-include!(concat!(env!("OUT_DIR"), "/protos/mod.rs"));
+include!(concat!(env!("OUT_DIR"), "/proto/mod.rs"));
 use message::Game_State;
 
 #[derive(Debug)]
