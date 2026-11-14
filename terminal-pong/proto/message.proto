@@ -1,12 +1,30 @@
 syntax = "proto3";
 
+// One frame of the game, as the server sees it.
 message Game_State {
-    uint32 bx = 1;
-    uint32 by = 2;
-    uint32 p1y = 3;
+    float bx = 1;        // ball position, in cells
+    float by = 2;
+    uint32 p1y = 3;      // paddle centres (row)
     uint32 p2y = 4;
-    int32 bdx = 5;
-    int32 bdy = 6;
+    float bdx = 5;       // ball velocity, in cells per second
+    float bdy = 6;
     uint32 p1points = 7;
-    uint32 p2points = 8; 
-} 
+    uint32 p2points = 8;
+    uint32 tick = 9;
+    uint32 rally = 10;    // paddle hits since the last serve
+    uint32 serve_in = 11; // ticks until the ball is served
+}
+
+// Client -> server: move my paddle by dy rows (-1 is up).
+message ClientInput {
+    sint32 dy = 1;
+}
+
+// Server -> client.
+message ServerFrame {
+    uint32 you = 1;          // which player this client is: 1 or 2
+    bool waiting = 2;        // true until both players have joined
+    Game_State state = 3;
+    uint32 winner = 4;       // 0 while the match is running
+    bool opponent_left = 5;
+}
