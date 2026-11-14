@@ -4,7 +4,7 @@ use game::GameState;
 mod server;
 use clap::{Command, Arg};
 use protobuf::Message;
-include!(concat!(env!("OUT_DIR"), "/mod.rs"));
+include!(concat!(env!("OUT_DIR"), "/proto/mod.rs"));
 use message::Game_State;
 use std::io;
 
@@ -12,17 +12,32 @@ use std::io;
 fn main() -> io::Result<()> {
     let app = Command::new("terminal-pong")
         .about("Terminal Pong Game")
-        .arg(Arg::new("mode").required(true))
-        .arg(Arg::new("server").required(false))
+        .arg(
+            Arg::new("mode")
+                .required(true)
+                .value_parser(["server", "client", "selftest"])
+                .help("server: print game state received from a client; client: play the game; selftest: protobuf round-trip check"),
+        )
+        .arg(
+            Arg::new("address")
+                .required(false)
+                .default_value("127.0.0.1:7878")
+                .help("host:port the server listens on / the client connects to"),
+        )
         .get_matches();
 
     let mode = app.get_one::<String>("mode").unwrap();
-    let port = app.get_one::<String>("server").unwrap();
+    let port = app.get_one::<String>("address").unwrap();
     if mode == "server" {
-        let _handler = server::start_server(port);
+        println!("Listening on {port}");
+        server::start_server(port)?;
     } else if mode == "client" {
         let game_state = GameState::new();
-        game_state.run_game(port).expect("Game was unable to run");
+        if let Err(err) = game_state.run_game(port) {
+            eprintln!("Could not start the game against {port}: {err}");
+            eprintln!("Start a server first: terminal-pong server {port}");
+            std::process::exit(1);
+        }
 
     } else {
         // test for if my protobuf thingy works
@@ -50,9 +65,7 @@ fn main() -> io::Result<()> {
         assert_eq!(in_msg.p2y, out_msg.p2y);
         assert_eq!(in_msg.p1points, out_msg.p1points);
         assert_eq!(in_msg.p2points, out_msg.p2points);
+        println!("Protobuf round-trip OK");
     }        
     Ok(())
 }
-
-
-

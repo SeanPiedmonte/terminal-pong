@@ -3,7 +3,7 @@ use std::net::{TcpListener, TcpStream};
 //use std::thread;
 //use std::sync::{Arc, Mutex};
 use protobuf::Message;
-include!(concat!(env!("OUT_DIR"), "/protos/mod.rs"));
+include!(concat!(env!("OUT_DIR"), "/proto/mod.rs"));
 use message::Game_State;
 
 fn handle_client(mut stream: TcpStream) {
@@ -21,6 +21,7 @@ fn handle_client(mut stream: TcpStream) {
             },
             Err(err) => {
                 println!("Error reading from client: {:?}", err);
+                break;
             }
         }
     }
@@ -29,7 +30,7 @@ fn handle_client(mut stream: TcpStream) {
 
 pub fn start_server(port: &str) -> std::io::Result<()> {
 
-    let listener = TcpListener::bind(port).unwrap();
+    let listener = TcpListener::bind(port)?;
     
     for stream in listener.incoming() {
         let stream = stream.unwrap();
